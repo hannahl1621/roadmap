@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Roadmap · Tread Athletics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0d0d0c;
+      color: #f7f6f2;
+      min-height: 100vh;
+    }
+
+    /* ── Page header ───────────────────────────────────────── */
+    .page-header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: #1c1c1b;
+      border-bottom: 1px solid #292928;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    /* Tread logo */
+    .tread-logo svg {
+      height: 26px;
+      width: auto;
+      display: block;
+    }
+
+    /* divider */
+    .header-divider {
+      width: 1px; height: 20px; background: #292928;
+    }
+
+    /* title */
+    .header-title {
+      font-size: 14px; font-weight: 500; color: #979795;
+    }
+
+    /* Today badge */
+    .today-badge {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      border: 1px solid #292928;
+      background: transparent;
+      font-size: 12px; font-weight: 500;
+      color: #d6c281;
+      display: flex; align-items: center;
+    }
+
+    /* Launch Labs badge */
+    .ll-badge {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      border: 1px solid #292928;
+      font-size: 11px; font-weight: 600;
+      color: #979795;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex; align-items: center;
+    }
+
+    /* ── Outer wrapper ─────────────────────────────────────── */
+    .gantt-wrapper {
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    /* ── Board frame ───────────────────────────────────────── */
+    .board {
+      min-width: max-content;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #292928;
+      background: #111110;
+    }
+
+    /* ── Column widths ─────────────────────────────────────── */
+    .c-name  { width: 260px; min-width: 260px; }
+    .c-dur   { width: 40px;  min-width: 40px; }
+    .c-start { width: 76px;  min-width: 76px; }
+    .c-end   { width: 76px;  min-width: 76px; }
+    /* chart col is dynamic */
+
+    /* ── Column header row ─────────────────────────────────── */
+    .col-header {
+      display: flex;
+      background: #1c1c1b;
+      border-bottom: 1px solid #292928;
+      height: 56px;
+    }
+    .ch {
+      padding: 0 12px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #585856;
+      display: flex; align-items: flex-end; padding-bottom: 8px;
+    }
+    .ch-center { justify-content: center; }
+
+    /* timeline header */
+    .timeline-header {
+      flex: 1;
+      position: relative;
+      background: #1c1c1b;
+    }
+    /* month strip */
+    .month-strip {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 28px;
+      display: flex;
+      align-items: center;
+    }
+    .month-block {
+      position: absolute;
+      top: 0;
+      height: 28px;
+      display: flex; align-items: center;
+      padding-left: 10px;
+    }
+    .month-block-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #bcbbb7;
+    }
+    .month-sep {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: #3d3d3c;
+    }
+    /* week strip */
+    .week-strip {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 26px;
+      border-top: 1px solid #292928;
+    }
+    .week-tick {
+      position: absolute;
+      bottom: 0;
+      height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 500;
+      color: #585856;
+    }
+    /* today header marker */
+    .today-header-mark {
+      position: absolute;
+      bottom: -2px;
+      transform: translateX(-50%);
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #d6c281;
+      text-transform: uppercase;
+    }
+
+    /* ── Team section header ───────────────────────────────── */
+    /* ── Team section spacer ──────────────────────────────── */
+    .team-spacer {
+      height: 10px;
+      background: #0d0d0c;
+      border-top: 1px solid #292928;
+    }
+
+    .team-row {
+      display: flex;
+      background: #1c1c1b;
+      border-top: 2px solid #3d3d3c;
+      border-bottom: 1px solid #292928;
+      height: 36px;
+    }
+    /* first team — no spacer needed, but keep consistent top border */
+    .team-row:first-child {
+      border-top: 1px solid #292928;
+    }
+    .team-label-cell {
+      display: flex; align-items: center;
+      padding: 0 16px 0 12px;
+      gap: 10px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #bcbbb7;
+      border-left: 3px solid #d6c281;
+    }
+    .team-dot {
+      display: none; /* replaced by left border accent */
+    }
+    .team-chart-bg {
+      flex: 1;
+      background: #1c1c1b;
+      position: relative;
+    }
+
+    /* ── Task row ──────────────────────────────────────────── */
+    .task-row {
+      display: flex;
+      align-items: stretch;
+      height: 40px;
+      border-bottom: 1px solid #292928;
+      transition: background 0.1s;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:nth-child(even) { background: #1c1c1b; }
+    .task-row:nth-child(odd)  { background: #111110; }
+    .task-row:hover { background: rgba(255,255,255,0.03) !important; }
+
+    .task-name-cell {
+      padding: 0 12px 0 20px;
+      font-size: 12px; font-weight: 400;
+      color: #bcbbb7;
+      display: flex; align-items: center;
+      white-space: nowrap; overflow: hidden;
+    }
+    .task-name-cell span { overflow: hidden; text-overflow: ellipsis; }
+
+    .task-dur-cell {
+      font-size: 11px; font-weight: 400;
+      color: #585856;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .task-date-cell {
+      padding: 0 10px;
+      font-size: 10.5px; font-weight: 400;
+      color: #585856;
+      display: flex; align-items: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .task-chart-cell {
+      flex: 1;
+      position: relative;
+      overflow: visible;
+    }
+
+    /* ── Grid lines ────────────────────────────────────────── */
+    .grid-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: #292928;
+      pointer-events: none;
+    }
+    .grid-line-month {
+      background: #3d3d3c;
+    }
+
+    /* ── Today line ────────────────────────────────────────── */
+    .today-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: #f7f6f2;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* ── Gantt bar ─────────────────────────────────────────── */
+    .gantt-bar {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 20px;
+      border-radius: 8px;
+      z-index: 2;
+      transition: opacity 0.1s;
+      min-width: 4px;
+    }
+    /* Active — crosses today */
+    .gantt-bar.active {
+      background: #d6c281;
+    }
+    /* Future — not started */
+    .gantt-bar.future {
+      background: #3d3d3c;
+      border: 1px solid #585856;
+    }
+    /* Past — completed */
+    .gantt-bar.past {
+      background: #292928;
+      border: 1px solid #3d3d3c;
+    }
+    .task-row:hover .gantt-bar { opacity: 0.85; }
+
+    /* ── Footer legend ─────────────────────────────────────── */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 20px;
+      background: #1c1c1b;
+      border-top: 1px solid #292928;
+      font-size: 11px; font-weight: 500; color: #585856;
+    }
+    .li { display: flex; align-items: center; gap: 7px; }
+    .li-swatch {
+      width: 20px; height: 10px;
+      border-radius: 4px;
+    }
+    .li-swatch.active { background: #d6c281; }
+    .li-swatch.future { background: #3d3d3c; border: 1px solid #585856; }
+    .li-swatch.past   { background: #292928; border: 1px solid #3d3d3c; }
+    .li-today-line {
+      width: 2px; height: 14px;
+      background: #f7f6f2;
+      border-radius: 1px;
+    }
+    .legend-right {
+      margin-left: auto;
+      font-size: 11px; font-weight: 400;
+      color: #3d3d3c;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Page Header ─────────────────────────────────────────── -->
+<header class="page-header">
+  <div class="header-left">
+    <!-- Tread Logo -->
+    <div class="tread-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 85">
+<path transform="matrix(1,0,0,-1,0.0,81.78)" d="M47.336828 14.423267C46.27805 16.171616 45.487096 17.834153 44.483835 20.027863L44.476354 20.051239C43.72919 22.615345 41.573629 24.622206 39.619798 26.251072 39.773218 26.314692 39.934415 26.380574 40.10156 26.448885 41.920576 27.192324 44.443838 28.223586 45.309457 29.758204 45.36893 29.863 45.430356 29.970055 45.49285 30.078974 46.0113 30.982569 46.603456 32.014635 46.770154 32.95359 47.22592 35.513795 45.0965 35.580038 42.98203 35.513795L42.999498 35.60116C43.3573 37.390367 43.635484 38.78144 43.385507 40.353639 43.272706 40.628427 43.15885 40.91664 43.042276 41.211767 42.53724 42.490274 41.981035 43.898324 41.23741 44.905115 41.70712 45.25693 42.025178 45.78748 42.122797 46.382005 42.231794 47.17171 41.609075 48.10195 41.0496 48.937719 40.899564 49.161848 40.754079 49.379179 40.62847 49.585187 41.30465 49.95928 41.857545 50.27492 41.83513 50.62953 41.72679 50.890619 39.212598 50.80099 38.7643 50.76592 37.75937 51.942758 36.702127 52.309057 34.834218 51.794679 32.334959 53.61059 30.433438 54.323709 27.071206 54.132764 26.607766 54.105455 26.142487 54.09154 25.676659 54.07761 25.477843 54.071668 25.278925 54.06572 25.080008 54.058725 25.041794 54.05745 25.002919 54.056177 24.963433 54.054883 23.5554 54.008787 21.369116 53.93721 20.526049 52.800058 20.30641 52.50085 20.1874 52.134504 20.1874 51.757658 20.1874 51.380815 20.30641 51.014467 20.526049 50.71526 20.675314 50.471479 20.8776 50.267854 21.116475 50.120927 21.355347 49.974 21.624068 49.88791 21.900828 49.86965 22.336077 49.84407 22.78391 50.259206 23.1267 50.57696 23.201703 50.64649 23.271676 50.711355 23.335389 50.76592 25.035185 52.7455 28.28161 51.027006 30.059857 50.048906V49.893033C30.055079 49.781099 30.049946 49.66785 30.044766 49.553518 29.96896 47.880697 29.882575 45.974435 30.7323 44.51543 31.216162 43.60695 31.522131 42.60723 31.632439 41.574354 31.742745 40.541479 31.655182 39.496034 31.374848 38.498754 30.912634 36.476984 29.560164 35.383844 28.143153 34.238534 27.48719 33.708349 26.8174 33.166986 26.215689 32.517148 24.362725 30.853209 23.802365 27.139544 23.847195 24.758593 23.87708 23.063479 21.99048 20.779946 20.656794 19.774563 19.537772 19.680954 18.436648 19.343953 17.360922 18.8581 15.136189 19.599995 13.228522 20.408558 11.664963 21.264523 6.28539 24.222203 5.272969 28.750296 11.392233 34.681245V34.685045C14.940831 37.501256 20.474999 40.609937 28.63253 43.925027V43.932767L28.630286 43.932165C22.455393 42.271123 .453503 35.95468 .875595 25.54376 .987317 22.758532 3.567755 19.899727 7.743554 18.117676 9.081757 17.30952 10.674022 16.547482 12.545477 15.860165 12.22421 15.623665 11.906942 15.387001 11.59394 15.153519 9.861765 13.861408 8.260204 12.666733 6.834277 12.136814 6.481034 12.120152 6.209608 12.336632 5.936235 12.554665 5.634275 12.795498 5.329941 13.038227 4.910346 12.970734 4.304997 12.873131 3.843142 11.54351 3.24386 9.818264 2.670758 8.168377 1.971976 6.156673 .901823 4.514648 .608333 3.937881 .366934 3.333866 .180791 2.710423 .016415 2.133694-.226401 1.01141 .449782 .621731 1.271706 .160908 2.068901 1.289783 2.800094 2.325184 3.132396 2.795742 3.451066 3.246998 3.75223 3.520962 4.771765 4.482773 5.865024 5.355972 7.021068 6.131828 11.0819 6.743626 14.399321 9.260963 17.313258 11.719852 18.227189 12.38158 19.23593 12.887962 20.301909 13.220131 20.682559 13.348503 21.056832 13.475567 21.425223 13.602802 26.83199 12.701332 33.53987 12.267895 41.76264 12.54586 41.803014 12.447941 41.84366 12.348991 41.8847 12.249084 42.78043 10.068668 43.86367 7.431805 46.30691 5.095272 46.1388 4.538029 45.944543 3.750874 46.44888 3.291046 46.9068 2.873543 48.106958 2.81263 48.832929 2.775784 48.90651 2.772049 48.97522 2.768562 49.037794 2.764977 50.812387 2.660294 52.449056 2.677734 54.12854 2.695633 55.01236 2.705048 55.90804 2.714592 56.841917 2.706528 56.87193 2.706303 56.903139 2.705933 56.935308 2.705551 57.45567 2.699337 58.228086 2.690121 58.291418 3.244286 58.35492 3.649551 57.917829 3.972988 57.544248 4.10548 56.834444 4.347084 56.117174 4.577003 55.3999 4.806911 54.990354 4.929974 54.588556 5.079643 54.19693 5.255043 53.749387 5.484066 53.325136 5.759533 52.930524 6.077271 52.605035 6.358402 52.303754 6.668736 52.03018 7.004715 51.7627 7.31385 51.44999 7.576889 51.103689 7.784077L50.961744 7.865906 50.984159 8.017883C51.099969 8.797245 50.038988 10.507946 49.57201 11.13533 49.107187 11.758297 48.692544 12.340374 48.31483 12.898602 53.091005 13.245728 58.3086 13.810352 63.999509 14.62878 62.52744 14.508659 61.08074 14.405014 59.659719 14.317188 61.100419 14.419033 62.548185 14.527096 64 14.639938 58.09185 14.320904 52.517396 14.262985 47.336828 14.423267ZM40.734628 14.757755C40.43529 15.274738 40.104459 15.714355 39.705736 16.053112 38.691888 16.772343 36.78192 17.678517 34.95851 18.543622 33.94655 19.023743 32.961248 19.491215 32.170579 19.907063 30.707545 18.373063 29.23342 17.2378 27.690333 16.32648 31.586218 15.635555 35.95386 15.098709 40.734628 14.757755Z" fill="#d6c281" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,80.0,75.8)" d="M51.40501 41.599988C52.385374 41.599988 52.875555 41.130655 52.875555 40.191987V33.919988C52.875555 32.938653 52.385374 32.44799 51.40501 32.44799H31.328925V-1.792011C31.328925-2.730679 30.860058-3.200012 29.922324-3.200012H22.953236C22.015498-3.200012 21.546629-2.730679 21.546629-1.792011V32.44799H1.470541C.49018 32.44799 0 32.938653 0 33.919988V40.191987C0 41.130655 .49018 41.599988 1.470541 41.599988H51.40501Z" fill="#d6c281"/>
+<path transform="matrix(1,0,0,-1,80.0,66.14)" d="M90.05568 22.271985C90.822917 22.271985 91.20654 21.887986 91.20654 21.119986V15.743986C91.20654 14.975986 90.822917 14.591986 90.05568 14.591986H73.048549C71.68457 14.591986 70.555019 14.463985 69.659908 14.207985 68.76479 13.994652 68.04018 13.610651 67.48606 13.055986 66.97456 12.543985 66.61227 11.818651 66.39914 10.879986 66.18602 9.983986 66.07946 8.874653 66.07946 7.551985V-11.456013C66.07946-12.39468 65.61059-12.864014 64.67285-12.864014H58.407068C57.42671-12.864014 56.936525-12.39468 56.936525-11.456013V9.279985C56.936525 11.583986 57.192274 13.546652 57.703763 15.167986 58.215257 16.831986 59.046438 18.175986 60.197298 19.199986 61.390779 20.266652 62.946565 21.03465 64.86466 21.503983 66.825389 22.015984 69.254978 22.271985 72.153438 22.271985H90.05568Z" fill="#d6c281"/>
+<path transform="matrix(1,0,0,-1,80.0,66.14)" d="M128.88317 22.271985C131.057 22.271985 132.84723 22.079985 134.25383 21.695984 135.70307 21.35465 136.83261 20.757319 137.64247 19.903986 138.49497 19.093319 139.0917 18.00532 139.43271 16.639986 139.7737 15.31732 139.9442 13.695986 139.9442 11.775988V5.695986C139.9442 4.330652 139.64583 3.370653 139.04909 2.815987 138.45235 2.303986 137.53592 2.047985 136.2998 2.047985H104.01183V.511986C104.01183-1.493347 104.480709-2.944016 105.41844-3.840015 106.3988-4.736015 108.27428-5.18401 111.04486-5.18401H137.7064C138.47365-5.18401 138.85727-5.568012 138.85727-6.336014V-11.712009C138.85727-12.480011 138.47365-12.864014 137.7064-12.864014H110.14975C107.25129-12.864014 104.82169-12.629349 102.86097-12.160015 100.94287-11.690681 99.387088-10.944012 98.1936-9.920013 97.04274-8.853348 96.21157-7.509346 95.70008-5.888016 95.18859-4.224014 94.93284-2.240013 94.93284 .063984V9.279985C94.93284 11.583986 95.18859 13.546652 95.70008 15.167986 96.21157 16.831986 97.04274 18.175986 98.1936 19.199986 99.387088 20.266652 100.94287 21.03465 102.86097 21.503983 104.82169 22.015984 107.25129 22.271985 110.14975 22.271985H128.88317ZM104.01183 7.743986H129.90615C130.63077 7.743986 130.99306 8.106653 130.99306 8.831985V11.519985C130.99306 12.842651 130.71602 13.781321 130.1619 14.335987 129.60778 14.890654 128.58481 15.167986 127.09295 15.167986H111.04486C108.27428 15.167986 106.3988 14.719986 105.41844 13.823986 104.480709 12.970652 104.01183 11.519985 104.01183 9.471985V7.743986Z" fill="#d6c281"/>
+<path transform="matrix(1,0,0,-1,80.0,66.14)" d="M175.17725 22.271985C178.03308 22.271985 180.44136 22.015984 182.40209 21.503983 184.36281 21.03465 185.91858 20.266652 187.06945 19.199986 188.26293 18.175986 189.11542 16.831986 189.6269 15.167986 190.13842 13.546652 190.39417 11.583986 190.39417 9.279985V-7.744015C190.39417-8.768013 190.30892-9.621349 190.13843-10.304016 190.01055-10.944016 189.75479-11.456013 189.37117-11.840015 189.03018-12.224014 188.5613-12.501347 187.96456-12.672012 187.36782-12.800014 186.60059-12.864014 185.66284-12.864014H155.22904C153.35356-12.864014 151.77646-12.693348 150.49773-12.352013 149.26161-11.968014 148.25995-11.413349 147.4927-10.688015 146.72547-9.962681 146.17136-9.024014 145.83036-7.872013 145.53199-6.720013 145.3828-5.354683 145.3828-3.776016V-.704014C145.3828 .618656 145.53199 1.791988 145.83036 2.815987 146.17136 3.882652 146.72547 4.778652 147.4927 5.503984 148.25995 6.229319 149.26161 6.762651 150.49773 7.103985 151.77646 7.487986 153.35356 7.679985 155.22904 7.679985H181.2512V8.895988C181.2512 9.919989 181.14466 10.794651 180.93152 11.519985 180.7184 12.245319 180.35613 12.82132 179.84464 13.247986 179.33315 13.717319 178.62982 14.058653 177.73471 14.271986 176.8396 14.485319 175.68874 14.591986 174.28214 14.591986H147.55664C146.7894 14.591986 146.40578 14.975986 146.40578 15.743986V21.119986C146.40578 21.887986 146.7894 22.271985 147.55664 22.271985H175.17725ZM179.39707-5.824017C180.07906-5.824017 180.54792-5.674683 180.80367-5.376015 181.10204-5.034683 181.2512-4.458679 181.2512-3.648014V1.983986H157.85044C156.52909 1.983986 155.59134 1.70665 155.03722 1.151985 154.52573 .639984 154.26998-.128014 154.26998-1.152012V-2.496014C154.26998-3.648014 154.52573-4.50135 155.03722-5.056015 155.59134-5.568016 156.52909-5.824017 157.85044-5.824017H179.39707Z" fill="#d6c281"/>
+<path transform="matrix(1,0,0,-1,80.0,79.0)" d="M235.921 35.135999V46.592C235.921 47.530668 236.38986 48 237.32759 48H243.59337C244.53112 48 245 47.530668 245 46.592V12.927998C245 10.624001 244.74423 8.639999 244.23274 6.975998 243.72126 5.354668 242.86878 4.010666 241.6753 2.944 240.52443 1.920002 238.96863 1.173332 237.00792 .703999 235.0472 .234665 232.63892 0 229.78308 0H211.88085C208.98239 0 206.5528 .234665 204.59207 .703999 202.67398 1.173332 201.11818 1.920002 199.9247 2.944 198.77384 4.010666 197.94266 5.354668 197.43117 6.975998 196.91968 8.639999 196.66394 10.624001 196.66394 12.927998V22.144C196.66394 24.448 196.91968 26.410666 197.43117 28.032 197.94266 29.696 198.77384 31.039999 199.9247 32.064 201.11818 33.130666 202.67398 33.898668 204.59207 34.367998 206.5528 34.879999 208.98239 35.135999 211.88085 35.135999H235.921ZM228.88797 7.680004C230.29459 7.680004 231.44542 7.786667 232.34053 8 233.23564 8.256001 233.93897 8.639999 234.45047 9.152 235.00458 9.706669 235.3882 10.431999 235.60132 11.327999 235.81444 12.223999 235.921 13.354668 235.921 14.720001V27.456H212.77594C211.41196 27.456 210.28243 27.328 209.38732 27.071999 208.4922 26.858666 207.76758 26.474665 207.21347 25.92 206.70198 25.407999 206.33966 24.682665 206.12654 23.744 205.9134 22.848 205.80686 21.738667 205.80686 20.415999V14.720001C205.80686 13.354668 205.9134 12.223999 206.12654 11.327999 206.33966 10.431999 206.70198 9.706669 207.21347 9.152 207.76758 8.639999 208.4922 8.256001 209.38732 8 210.28243 7.786667 211.41196 7.680004 212.77594 7.680004H228.88797Z" fill="#d6c281"/>
+</svg>
+    </div>
+    <div class="header-divider"></div>
+    <span class="header-title">Team Roadmap</span>
+  </div>
+
+  <div class="header-right">
+    <div class="today-badge">Today &nbsp; Jun 12, 2026</div>
+    <div class="ll-badge">Launch Labs</div>
+  </div>
+</header>
+
+<!-- ── Gantt Board ─────────────────────────────────────────── -->
+<div class="gantt-wrapper">
+  <div class="board" id="gantt-root"></div>
+</div>
+
+<!-- ── Legend ─────────────────────────────────────────────── -->
+<footer class="legend">
+  <div class="li"><div class="li-swatch active"></div> In progress</div>
+  <div class="li"><div class="li-swatch future"></div> Upcoming</div>
+  <div class="li"><div class="li-swatch past"></div> Completed</div>
+  <div class="li"><div class="li-today-line"></div> Today</div>
+  <div class="legend-right">Q2 / Q3 2026 &nbsp;·&nbsp; May → Sep</div>
+</footer>
+
+<script>
+const PX = 7.5;
+const TIMELINE_START = new Date('2026-05-25T00:00:00');
+const TIMELINE_END   = new Date('2026-09-28T00:00:00');
+const TODAY_STR      = '2026-06-12';
+
+function toDate(s)   { return new Date(s + 'T00:00:00'); }
+function dayOff(s)   { return Math.round((toDate(s) - TIMELINE_START) / 86400000); }
+function px(d)       { return d * PX; }
+
+const TOTAL_DAYS = Math.round((TIMELINE_END - TIMELINE_START) / 86400000);
+const CHART_W    = px(TOTAL_DAYS);
+const TODAY_OFF  = dayOff(TODAY_STR);
+
+const MONTHS = [
+  { label:'May',    start:'2026-05-25', end:'2026-06-01' },
+  { label:'June',   start:'2026-06-01', end:'2026-07-01' },
+  { label:'July',   start:'2026-07-01', end:'2026-08-01' },
+  { label:'August', start:'2026-08-01', end:'2026-09-01' },
+  { label:'Sep',    start:'2026-09-01', end:'2026-09-21' },
+];
+const WEEKS = [];
+let wd = new Date(TIMELINE_START);
+while (wd < TIMELINE_END) { WEEKS.push(new Date(wd)); wd = new Date(wd.getTime() + 7*86400000); }
+
+function fmtDate(s) {
+  const d = toDate(s);
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return mo[d.getMonth()] + ' ' + d.getDate();
+}
+function barStatus(task) {
+  const s = dayOff(task.start), e = dayOff(task.end);
+  if (e < TODAY_OFF) return 'past';
+  if (s <= TODAY_OFF) return 'active';
+  return 'future';
+}
+
+const TEAMS = [
+  { name:'MOB TEAM  ·  iOS', tasks:[
+    { name:'Live Activity',                        dur:10, start:'2026-05-27', end:'2026-06-10' },
+    { name:'Chat 1.5',                             dur:19, start:'2026-05-28', end:'2026-06-16' },
+    { name:'Vault collections',                    dur:3,  start:'2026-06-09', end:'2026-06-12' },
+    { name:'Athlete status home screens',          dur:7,  start:'2026-06-13', end:'2026-06-24' },
+    { name:'Compression optimization',             dur:7,  start:'2026-06-12', end:'2026-06-23' },
+    { name:'Program Builder',                      dur:30, start:'2026-06-22', end:'2026-08-04' },
+    { name:'Update client — resumable uploads',    dur:3,  start:'2026-06-21', end:'2026-06-25' },
+    { name:'Chat 2.0',                             dur:14, start:'2026-06-20', end:'2026-07-10' },
+    { name:'Tasks redesign',                       dur:7,  start:'2026-06-22', end:'2026-07-01' },
+    { name:'Upload manager',                       dur:3,  start:'2026-06-25', end:'2026-06-30' },
+    { name:'BG Upload in Tasks',                   dur:3,  start:'2026-06-29', end:'2026-07-02' },
+    { name:'Haptics',                              dur:7,  start:'2026-07-01', end:'2026-07-10' },
+    { name:'Tasks watchers',                       dur:3,  start:'2026-07-10', end:'2026-07-15' },
+    { name:'Scheduler & Personal Calendar',        dur:28, start:'2026-07-07', end:'2026-08-15' },
+    { name:'In-app calling',                       dur:28, start:'2026-07-14', end:'2026-08-22' },
+    { name:'Assessments redesign',                 dur:28, start:'2026-08-17', end:'2026-09-24' },
+  ]},
+  { name:'WEB TEAM  ·  Web', tasks:[
+    { name:'Kanban board',                         dur:14, start:'2026-06-04', end:'2026-06-24' },
+    { name:'BDLab',                                dur:10, start:'2026-06-06', end:'2026-06-20' },
+    { name:'Chat (web)',                           dur:7,  start:'2026-06-18', end:'2026-06-27' },
+    { name:'Personal Calendar UI redesign',        dur:10, start:'2026-06-21', end:'2026-07-04' },
+    { name:'Kanban board improvements',            dur:14, start:'2026-06-21', end:'2026-07-10' },
+    { name:'BDLab — Polishing',                    dur:14, start:'2026-06-27', end:'2026-07-18' },
+    { name:'Scheduler',                            dur:14, start:'2026-07-03', end:'2026-07-24' },
+    { name:'Teams Update Finalization',            dur:1,  start:'2026-07-08', end:'2026-07-09' },
+    { name:'Kanban PWA',                           dur:7,  start:'2026-07-10', end:'2026-07-22' },
+    { name:'Excel Parsing',                        dur:3,  start:'2026-07-14', end:'2026-07-18' },
+    { name:'Program Builder',                      dur:28, start:'2026-07-18', end:'2026-08-27' },
+    { name:'Roles & Permissions',                  dur:3,  start:'2026-07-20', end:'2026-07-23' },
+    { name:"Teams Admin (Coan's request)",         dur:1,  start:'2026-07-19', end:'2026-07-21' },
+    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-07-21', end:'2026-07-22' },
+    { name:'Athlete profile redesign',             dur:10, start:'2026-07-23', end:'2026-08-06' },
+    { name:'In-App calling',                       dur:21, start:'2026-07-24', end:'2026-08-22' },
+    { name:'Assessments redesign',                 dur:14, start:'2026-08-04', end:'2026-08-22' },
+    { name:'Rep schemes',                          dur:3,  start:'2026-08-21', end:'2026-08-26' },
+  ]},
+  { name:'BE TEAM  ·  Backend', tasks:[
+    { name:'Kanban Board',                         dur:2,  start:'2026-06-09', end:'2026-06-11' },
+    { name:'Vault collections',                    dur:3,  start:'2026-06-09', end:'2026-06-12' },
+    { name:'Team update finalization',             dur:1,  start:'2026-06-09', end:'2026-06-10' },
+    { name:'Multiple teams assignment',            dur:3,  start:'2026-06-11', end:'2026-06-16' },
+    { name:'R&P',                                  dur:3,  start:'2026-06-13', end:'2026-06-18' },
+    { name:'BDLab',                                dur:10, start:'2026-06-13', end:'2026-06-27' },
+    { name:'Chat 2.0 support',                     dur:14, start:'2026-06-15', end:'2026-07-03' },
+    { name:'Android athletes support',             dur:7,  start:'2026-06-17', end:'2026-06-26' },
+    { name:'Tech Support Feature',                 dur:2,  start:'2026-06-25', end:'2026-06-27' },
+    { name:'Scheduler & Personal Calendar',        dur:21, start:'2026-06-26', end:'2026-07-28' },
+    { name:"Teams Admin (Coan's request)",         dur:2,  start:'2026-06-28', end:'2026-07-01' },
+    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-07-01', end:'2026-07-02' },
+    { name:'In-app calling',                       dur:21, start:'2026-07-02', end:'2026-08-01' },
+    { name:'Program Builder',                      dur:28, start:'2026-07-03', end:'2026-08-13' },
+    { name:'Frame.io integration w Vault',         dur:7,  start:'2026-07-22', end:'2026-07-31' },
+    { name:'Staff Page',                           dur:14, start:'2026-07-28', end:'2026-08-15' },
+    { name:'Exercise Library — Throwing',          dur:5,  start:'2026-07-31', end:'2026-08-07' },
+    { name:'Reports auto-tagged in Vault',         dur:7,  start:'2026-08-06', end:'2026-08-15' },
+    { name:'Rep schemes',                          dur:7,  start:'2026-08-15', end:'2026-08-26' },
+    { name:'Address data for non-US countries',    dur:2,  start:'2026-08-24', end:'2026-08-26' },
+    { name:'Assessments Redesign',                 dur:14, start:'2026-08-27', end:'2026-09-16' },
+  ]},
+];
+
+// ── Build ──────────────────────────────────────────────────
+const root = document.getElementById('gantt-root');
+
+// helper: make grid + today overlay for a row
+function makeOverlay(h) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `position:absolute;inset:0;pointer-events:none;height:${h}px`;
+
+  MONTHS.forEach((m, i) => {
+    if (i === 0) return;
+    const line = document.createElement('div');
+    line.className = 'grid-line grid-line-month';
+    line.style.left = px(dayOff(m.start)) + 'px';
+    wrap.appendChild(line);
+  });
+  WEEKS.forEach(w => {
+    const ws = w.toISOString().slice(0,10);
+    const isMonth = MONTHS.some(m => m.start === ws);
+    if (!isMonth) {
+      const line = document.createElement('div');
+      line.className = 'grid-line';
+      line.style.left = px(dayOff(ws)) + 'px';
+      wrap.appendChild(line);
+    }
+  });
+  const tl = document.createElement('div');
+  tl.className = 'today-line';
+  tl.style.left = px(TODAY_OFF) + 'px';
+  wrap.appendChild(tl);
+  return wrap;
+}
+
+// ── Column header ──────────────────────────────────────────
+const colHdr = document.createElement('div');
+colHdr.className = 'col-header';
+colHdr.innerHTML = `
+  <div class="ch c-name">Feature</div>
+  <div class="ch c-dur ch-center">d</div>
+  <div class="ch c-start">Start</div>
+  <div class="ch c-end">End</div>
+`;
+
+const tlHdr = document.createElement('div');
+tlHdr.className = 'timeline-header';
+tlHdr.style.width = CHART_W + 'px';
+
+// month strip
+const monthStrip = document.createElement('div');
+monthStrip.className = 'month-strip';
+MONTHS.forEach((m, i) => {
+  const startOff = dayOff(m.start);
+  const endOff   = dayOff(m.end);
+  const block = document.createElement('div');
+  block.className = 'month-block';
+  block.style.left  = px(startOff) + 'px';
+  block.style.width = px(endOff - startOff) + 'px';
+  block.innerHTML = `<span class="month-block-label">${m.label}</span>`;
+  monthStrip.appendChild(block);
+  if (i > 0) {
+    const sep = document.createElement('div');
+    sep.className = 'month-sep';
+    sep.style.left = px(startOff) + 'px';
+    monthStrip.appendChild(sep);
+  }
+});
+tlHdr.appendChild(monthStrip);
+
+// week strip
+const weekStrip = document.createElement('div');
+weekStrip.className = 'week-strip';
+WEEKS.forEach(w => {
+  const ws  = w.toISOString().slice(0,10);
+  const off = dayOff(ws);
+  const tick = document.createElement('div');
+  tick.className = 'week-tick';
+  tick.style.left  = px(off) + 'px';
+  tick.style.width = px(7) + 'px';
+  tick.textContent = w.getDate();
+  weekStrip.appendChild(tick);
+});
+// today label in week strip
+const todayLbl = document.createElement('div');
+todayLbl.className = 'today-header-mark';
+todayLbl.style.left = px(TODAY_OFF) + 'px';
+todayLbl.textContent = 'today';
+weekStrip.appendChild(todayLbl);
+tlHdr.appendChild(weekStrip);
+colHdr.appendChild(tlHdr);
+root.appendChild(colHdr);
+
+// ── Teams ──────────────────────────────────────────────────
+TEAMS.forEach((team, ti) => {
+  // Spacer between team sections
+  if (ti > 0) {
+    const spacer = document.createElement('div');
+    spacer.className = 'team-spacer';
+    root.appendChild(spacer);
+  }
+
+  // Team header
+  const teamRow = document.createElement('div');
+  teamRow.className = 'team-row';
+
+  const labelCell = document.createElement('div');
+  labelCell.className = 'team-label-cell';
+  labelCell.style.width = (260 + 40 + 76 + 76) + 'px';
+  labelCell.style.minWidth = labelCell.style.width;
+  labelCell.innerHTML = `<span>${team.name}</span>`;
+  teamRow.appendChild(labelCell);
+
+  const teamChart = document.createElement('div');
+  teamChart.className = 'team-chart-bg';
+  teamChart.style.width = CHART_W + 'px';
+  teamChart.style.height = '36px';
+  teamChart.appendChild(makeOverlay(36));
+  teamRow.appendChild(teamChart);
+  root.appendChild(teamRow);
+
+  // Task rows
+  team.tasks.forEach(task => {
+    const row = document.createElement('div');
+    row.className = 'task-row';
+
+    const nameCell = document.createElement('div');
+    nameCell.className = 'task-name-cell c-name';
+    nameCell.innerHTML = `<span title="${task.name}">${task.name}</span>`;
+
+    const durCell = document.createElement('div');
+    durCell.className = 'task-dur-cell c-dur';
+    durCell.textContent = task.dur;
+
+    const startCell = document.createElement('div');
+    startCell.className = 'task-date-cell c-start';
+    startCell.textContent = fmtDate(task.start);
+
+    const endCell = document.createElement('div');
+    endCell.className = 'task-date-cell c-end';
+    endCell.textContent = fmtDate(task.end);
+
+    const chartCell = document.createElement('div');
+    chartCell.className = 'task-chart-cell';
+    chartCell.style.width = CHART_W + 'px';
+    chartCell.appendChild(makeOverlay(40));
+
+    const bar = document.createElement('div');
+    bar.className = 'gantt-bar ' + barStatus(task);
+    bar.style.left  = px(dayOff(task.start)) + 'px';
+    bar.style.width = Math.max(task.dur * PX, 6) + 'px';
+    chartCell.appendChild(bar);
+
+    row.appendChild(nameCell);
+    row.appendChild(durCell);
+    row.appendChild(startCell);
+    row.appendChild(endCell);
+    row.appendChild(chartCell);
+    root.appendChild(row);
+  });
+});
+</script>
+</body>
+</html>
