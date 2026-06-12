@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Team Overview Gantt",
+  "schemaVersion": 1,
+  "description": "Team Overview Gantt chart for Q2/Q3 2026 — shows all Mob, Web, and BE team tasks with timeline bars, color-coded by status (past/active/upcoming), and a today marker."
+}
+</script>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -18,6 +25,9 @@
 
     /* ── Page header ───────────────────────────────────────── */
     .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
       height: 56px;
       display: flex;
       align-items: center;
@@ -95,10 +105,17 @@
 
     /* ── Column header row ─────────────────────────────────── */
     .col-header {
+      position: relative; /* JS will drive translateY for sticky effect */
+      z-index: 100;
       display: flex;
       background: #1c1c1b;
       border-bottom: 1px solid #292928;
       height: 56px;
+      will-change: transform;
+      transition: box-shadow 0.15s;
+    }
+    .col-header.is-stuck {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
     .ch {
       padding: 0 12px;
@@ -169,7 +186,6 @@
       text-transform: uppercase;
     }
 
-    /* ── Team section header ───────────────────────────────── */
     /* ── Team section spacer ──────────────────────────────── */
     .team-spacer {
       height: 10px;
@@ -184,10 +200,6 @@
       border-bottom: 1px solid #292928;
       height: 36px;
     }
-    /* first team — no spacer needed, but keep consistent top border */
-    .team-row:first-child {
-      border-top: 1px solid #292928;
-    }
     .team-label-cell {
       display: flex; align-items: center;
       padding: 0 16px 0 12px;
@@ -198,9 +210,7 @@
       color: #bcbbb7;
       border-left: 3px solid #d6c281;
     }
-    .team-dot {
-      display: none; /* replaced by left border accent */
-    }
+    .team-dot { display: none; }
     .team-chart-bg {
       flex: 1;
       background: #1c1c1b;
@@ -281,20 +291,9 @@
       transition: opacity 0.1s;
       min-width: 4px;
     }
-    /* Active — crosses today */
-    .gantt-bar.active {
-      background: #d6c281;
-    }
-    /* Future — not started */
-    .gantt-bar.future {
-      background: #3d3d3c;
-      border: 1px solid #585856;
-    }
-    /* Past — completed */
-    .gantt-bar.past {
-      background: #292928;
-      border: 1px solid #3d3d3c;
-    }
+    .gantt-bar.active { background: #d6c281; }
+    .gantt-bar.future { background: #3d3d3c; border: 1px solid #585856; }
+    .gantt-bar.past   { background: #292928; border: 1px solid #3d3d3c; }
     .task-row:hover .gantt-bar { opacity: 0.85; }
 
     /* ── Footer legend ─────────────────────────────────────── */
@@ -627,6 +626,19 @@ TEAMS.forEach((team, ti) => {
     root.appendChild(row);
   });
 });
+
+// ── Sticky timeline header (JS-driven to work inside overflow:hidden) ──
+const PAGE_HDR_H = 56;
+function updateStickyHeader() {
+  const boardTop = root.getBoundingClientRect().top;
+  const offset = Math.max(0, PAGE_HDR_H - boardTop);
+  const maxOffset = root.offsetHeight - colHdr.offsetHeight;
+  const clamped = Math.min(offset, maxOffset);
+  colHdr.style.transform = clamped > 0 ? `translateY(${clamped}px)` : '';
+  colHdr.classList.toggle('is-stuck', clamped > 0);
+}
+window.addEventListener('scroll', updateStickyHeader, { passive: true });
+updateStickyHeader();
 </script>
 </body>
 </html>
