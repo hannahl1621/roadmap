@@ -294,6 +294,7 @@
     .gantt-bar.active { background: #d6c281; }
     .gantt-bar.future { background: #3d3d3c; border: 1px solid #585856; }
     .gantt-bar.past   { background: #292928; border: 1px solid #3d3d3c; }
+    .gantt-bar.done   { background: #3d6b52; }
     .task-row:hover .gantt-bar { opacity: 0.85; }
 
     /* ── Footer legend ─────────────────────────────────────── */
@@ -314,6 +315,7 @@
     .li-swatch.active { background: #d6c281; }
     .li-swatch.future { background: #3d3d3c; border: 1px solid #585856; }
     .li-swatch.past   { background: #292928; border: 1px solid #3d3d3c; }
+    .li-swatch.done   { background: #3d6b52; }
     .li-today-line {
       width: 2px; height: 14px;
       background: #f7f6f2;
@@ -348,7 +350,7 @@
   </div>
 
   <div class="header-right">
-    <div class="today-badge">Today &nbsp; Jun 12, 2026</div>
+    <div class="today-badge" id="today-badge">Today</div>
     <div class="ll-badge">Launch Labs</div>
   </div>
 </header>
@@ -360,9 +362,10 @@
 
 <!-- ── Legend ─────────────────────────────────────────────── -->
 <footer class="legend">
+  <div class="li"><div class="li-swatch done"></div> Done</div>
   <div class="li"><div class="li-swatch active"></div> In progress</div>
   <div class="li"><div class="li-swatch future"></div> Upcoming</div>
-  <div class="li"><div class="li-swatch past"></div> Completed</div>
+  <div class="li"><div class="li-swatch past"></div> Past</div>
   <div class="li"><div class="li-today-line"></div> Today</div>
   <div class="legend-right">Q2 / Q3 2026 &nbsp;·&nbsp; May → Sep</div>
 </footer>
@@ -371,7 +374,10 @@
 const PX = 7.5;
 const TIMELINE_START = new Date('2026-05-25T00:00:00');
 const TIMELINE_END   = new Date('2026-09-28T00:00:00');
-const TODAY_STR      = '2026-06-12';
+const _today = new Date();
+const TODAY_STR = _today.toISOString().slice(0, 10);
+const _mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.getElementById('today-badge').textContent = 'Today   ' + _mo[_today.getMonth()] + ' ' + _today.getDate() + ', ' + _today.getFullYear();
 
 function toDate(s)   { return new Date(s + 'T00:00:00'); }
 function dayOff(s)   { return Math.round((toDate(s) - TIMELINE_START) / 86400000); }
@@ -398,6 +404,7 @@ function fmtDate(s) {
   return mo[d.getMonth()] + ' ' + d.getDate();
 }
 function barStatus(task) {
+  if (task.done) return 'done';
   const s = dayOff(task.start), e = dayOff(task.end);
   if (e < TODAY_OFF) return 'past';
   if (s <= TODAY_OFF) return 'active';
@@ -406,31 +413,36 @@ function barStatus(task) {
 
 const TEAMS = [
   { name:'MOB TEAM  ·  iOS', tasks:[
-    { name:'Live Activity',                        dur:10, start:'2026-05-27', end:'2026-06-10' },
-    { name:'Chat 1.5',                             dur:19, start:'2026-05-28', end:'2026-06-16' },
-    { name:'Vault collections',                    dur:3,  start:'2026-06-09', end:'2026-06-12' },
-    { name:'Athlete status home screens',          dur:7,  start:'2026-06-13', end:'2026-06-24' },
-    { name:'Compression optimization',             dur:7,  start:'2026-06-12', end:'2026-06-23' },
-    { name:'Program Builder',                      dur:37, start:'2026-06-22', end:'2026-08-13' },
-    { name:'Update client — resumable uploads',    dur:3,  start:'2026-06-21', end:'2026-06-25' },
-    { name:'Chat 2.0',                             dur:14, start:'2026-06-20', end:'2026-07-10' },
-    { name:'Tasks redesign',                       dur:7,  start:'2026-06-22', end:'2026-07-01' },
-    { name:'Upload manager',                       dur:3,  start:'2026-06-25', end:'2026-06-30' },
-    { name:'BG Upload in Tasks',                   dur:3,  start:'2026-06-29', end:'2026-07-02' },
-    { name:'Haptics',                              dur:7,  start:'2026-07-01', end:'2026-07-10' },
-    { name:'Tasks watchers',                       dur:3,  start:'2026-07-10', end:'2026-07-15' },
-    { name:'Scheduler & Personal Calendar',        dur:28, start:'2026-07-07', end:'2026-08-15' },
-    { name:'In-app calling',                       dur:28, start:'2026-07-14', end:'2026-08-22' },
-    { name:'Assessments redesign',                 dur:28, start:'2026-08-17', end:'2026-09-24' },
+    { name:'Live Activity',                                      dur:10, start:'2026-05-27', end:'2026-06-10', done:true },
+    { name:'Chat 1.5',                                           dur:19, start:'2026-05-28', end:'2026-06-16', done:true },
+    { name:'Chat 1.5 Polish',                                    dur:3,  start:'2026-06-22', end:'2026-06-24' },
+    { name:'Vault collections',                                  dur:10, start:'2026-06-09', end:'2026-06-22', done:true },
+    { name:'Athlete status home screens',                        dur:7,  start:'2026-06-26', end:'2026-07-07' },
+    { name:'Compression optimization 1.0',                       dur:7,  start:'2026-06-12', end:'2026-06-23', done:true },
+    { name:'Schedule a Call Redesign',                           dur:7,  start:'2026-06-26', end:'2026-07-07' },
+    { name:'Offline app states and caching',                     dur:22, start:'2026-07-08', end:'2026-08-07' },
+    { name:'Compression optimization 2.0 + upload improvements', dur:10, start:'2026-07-06', end:'2026-07-20' },
+    { name:'Program Builder',                                    dur:37, start:'2026-07-21', end:'2026-09-09' },
+    { name:'Update client — resumable uploads',                  dur:3,  start:'2026-06-21', end:'2026-06-25' },
+    { name:'Bug fixes',                                           dur:2,  start:'2026-06-20', end:'2026-06-24' },
+    { name:'Tasks redesign',                                     dur:7,  start:'2026-07-08', end:'2026-07-17' },
+    { name:'Upload manager',                                     dur:3,  start:'2026-06-30', end:'2026-07-02' },
+    { name:'BG Upload in Tasks',                                 dur:3,  start:'2026-06-29', end:'2026-07-02' },
+    { name:'Haptics',                                            dur:7,  start:'2026-07-20', end:'2026-07-28' },
+    { name:'Tasks watchers',                                     dur:3,  start:'2026-07-10', end:'2026-07-15' },
+    { name:'Scheduler & Personal Calendar',                      dur:28, start:'2026-07-07', end:'2026-08-15' },
+    { name:'In-app calling',                                     dur:28, start:'2026-07-14', end:'2026-08-22' },
+    { name:'Assessments redesign',                               dur:28, start:'2026-08-17', end:'2026-09-24' },
   ]},
   { name:'WEB TEAM  ·  Web', tasks:[
-    { name:'Kanban board',                         dur:14, start:'2026-06-04', end:'2026-06-24' },
-    { name:'BDLab',                                dur:10, start:'2026-06-06', end:'2026-06-20' },
+    { name:'Kanban board',                         dur:14, start:'2026-06-04', end:'2026-06-24', done:true },
+    { name:'BDLab — Alpha Group Testing',          dur:10, start:'2026-06-06', end:'2026-06-20', done:true },
     { name:'Chat (web)',                           dur:7,  start:'2026-06-18', end:'2026-06-27' },
-    { name:'Personal Calendar UI redesign',        dur:10, start:'2026-06-21', end:'2026-07-04' },
+    { name:'Calendar widget on Kanban board',      dur:7,  start:'2026-06-30', end:'2026-07-08' },
+    { name:'Personal Calendar UI redesign',        dur:10, start:'2026-07-09', end:'2026-07-23' },
     { name:'Kanban board improvements',            dur:14, start:'2026-06-21', end:'2026-07-10' },
-    { name:'BDLab — Polishing',                    dur:14, start:'2026-06-27', end:'2026-07-18' },
-    { name:'Scheduler',                            dur:14, start:'2026-07-03', end:'2026-07-24' },
+    { name:'BDLab — Polishing',                    dur:14, start:'2026-06-30', end:'2026-07-20' },
+    { name:'Scheduler',                            dur:14, start:'2026-07-24', end:'2026-08-12' },
     { name:'Teams Update Finalization',            dur:1,  start:'2026-07-08', end:'2026-07-09' },
     { name:'Kanban PWA',                           dur:7,  start:'2026-07-10', end:'2026-07-22' },
     { name:'Excel Parsing',                        dur:3,  start:'2026-07-14', end:'2026-07-18' },
@@ -444,27 +456,27 @@ const TEAMS = [
     { name:'Rep schemes',                          dur:3,  start:'2026-08-21', end:'2026-08-26' },
   ]},
   { name:'BE TEAM  ·  Backend', tasks:[
-    { name:'Kanban Board',                         dur:2,  start:'2026-06-09', end:'2026-06-11' },
-    { name:'Vault collections',                    dur:3,  start:'2026-06-09', end:'2026-06-12' },
-    { name:'Team update finalization',             dur:1,  start:'2026-06-09', end:'2026-06-10' },
-    { name:'Multiple teams assignment',            dur:3,  start:'2026-06-11', end:'2026-06-16' },
-    { name:'R&P',                                  dur:3,  start:'2026-06-13', end:'2026-06-18' },
-    { name:'BDLab',                                dur:10, start:'2026-06-13', end:'2026-06-27' },
+    { name:'Kanban Board',                         dur:10, start:'2026-06-09', end:'2026-06-22', done:true },
+    { name:'Vault collections',                    dur:3,  start:'2026-06-09', end:'2026-06-12', done:true },
+    { name:'Team update finalization',             dur:1,  start:'2026-06-09', end:'2026-06-10', done:true },
+    { name:'Multiple teams assignment',            dur:3,  start:'2026-06-11', end:'2026-06-16', done:true },
     { name:'Chat 2.0 support',                     dur:14, start:'2026-06-15', end:'2026-07-03' },
-    { name:'Android athletes support',             dur:7,  start:'2026-06-17', end:'2026-06-26' },
-    { name:'Tech Support Feature',                 dur:2,  start:'2026-06-25', end:'2026-06-27' },
-    { name:'Scheduler & Personal Calendar',        dur:21, start:'2026-06-26', end:'2026-07-28' },
+    { name:'Android athletes support',             dur:22, start:'2026-06-25', end:'2026-07-28' },
+    { name:'Tech Support Feature',                 dur:2,  start:'2026-06-26', end:'2026-06-30' },
+    { name:'BDLab BE Support',                     dur:10, start:'2026-07-02', end:'2026-07-16' },
+    { name:'Scheduler & Personal Calendar',        dur:21, start:'2026-07-06', end:'2026-08-04' },
     { name:"Teams Admin (Coan's request)",         dur:2,  start:'2026-06-28', end:'2026-07-01' },
     { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-07-01', end:'2026-07-02' },
-    { name:'In-app calling',                       dur:21, start:'2026-07-02', end:'2026-08-01' },
-    { name:'Program Builder',                      dur:28, start:'2026-07-03', end:'2026-08-13' },
-    { name:'Frame.io integration w Vault',         dur:7,  start:'2026-07-22', end:'2026-07-31' },
-    { name:'Staff Page',                           dur:14, start:'2026-07-28', end:'2026-08-15' },
+    { name:'Program Builder',                      dur:28, start:'2026-07-09', end:'2026-08-18' },
+    { name:'R&P',                                  dur:7,  start:'2026-07-29', end:'2026-08-06' },
+    { name:'In-app calling',                       dur:21, start:'2026-08-05', end:'2026-09-02' },
+    { name:'Reports auto-tagged in Vault',         dur:7,  start:'2026-08-07', end:'2026-08-17' },
+    { name:'Frame.io integration w Vault',         dur:7,  start:'2026-08-18', end:'2026-08-26' },
     { name:'Exercise Library — Throwing',          dur:5,  start:'2026-07-31', end:'2026-08-07' },
-    { name:'Reports auto-tagged in Vault',         dur:7,  start:'2026-08-06', end:'2026-08-15' },
-    { name:'Rep schemes',                          dur:7,  start:'2026-08-15', end:'2026-08-26' },
-    { name:'Address data for non-US countries',    dur:2,  start:'2026-08-24', end:'2026-08-26' },
-    { name:'Assessments Redesign',                 dur:14, start:'2026-08-27', end:'2026-09-16' },
+    { name:'Staff Page',                           dur:14, start:'2026-09-03', end:'2026-09-22' },
+    { name:'Rep schemes',                          dur:7,  start:'2026-08-27', end:'2026-09-04' },
+    { name:'Address data for non-US countries',    dur:2,  start:'2026-09-07', end:'2026-09-08' },
+    { name:'Assessments Redesign',                 dur:14, start:'2026-09-09', end:'2026-09-28' },
   ]},
 ];
 
@@ -593,7 +605,7 @@ TEAMS.forEach((team, ti) => {
 
     const nameCell = document.createElement('div');
     nameCell.className = 'task-name-cell c-name';
-    nameCell.innerHTML = `<span title="${task.name}">${task.name}</span>`;
+    nameCell.innerHTML = `<span title="${task.name}">${task.done ? '<span style="color:#5a9b74;margin-right:6px;font-size:11px">✓</span>' : ''}${task.name}</span>`;
 
     const durCell = document.createElement('div');
     durCell.className = 'task-dur-cell c-dur';
