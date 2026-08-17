@@ -411,6 +411,19 @@ function barStatus(task) {
   return 'future';
 }
 
+// Row order: completed first, then in progress, then upcoming —
+// each group sorted chronologically by start date, then by end date.
+const STATUS_RANK = { done: 0, past: 1, active: 2, future: 3 };
+function sortTasks(tasks) {
+  return tasks.slice().sort((a, b) => {
+    const ra = STATUS_RANK[barStatus(a)], rb = STATUS_RANK[barStatus(b)];
+    if (ra !== rb) return ra - rb;
+    const sa = dayOff(a.start), sb = dayOff(b.start);
+    if (sa !== sb) return sa - sb;
+    return dayOff(a.end) - dayOff(b.end);
+  });
+}
+
 const TEAMS = [
   { name:'MOB TEAM  ·  iOS', tasks:[
     { name:'Live Activity',                                      dur:10, start:'2026-05-27', end:'2026-06-10', done:true },
@@ -426,12 +439,12 @@ const TEAMS = [
     { name:'Resumable upload - testing on DEV',                  dur:3,  start:'2026-06-21', end:'2026-06-25', done:true },
     { name:'Athlete status home screens',                        dur:7,  start:'2026-07-06', end:'2026-07-15', done:true },
     { name:'Resumable Upload bug fixing',                        dur:6,  start:'2026-07-08', end:'2026-07-16', done:true },
-    { name:'Upload manager',                                     dur:3,  start:'2026-08-17', end:'2026-08-22' },
-    { name:'BG Upload in Tasks',                                 dur:3,  start:'2026-08-22', end:'2026-08-25' },
+    { name:'In-house request',                                   dur:7,  start:'2026-08-19', end:'2026-08-28' },
+    { name:'R&amp;P MOB',                                             dur:5,  start:'2026-08-25', end:'2026-08-31' },
     { name:'Tasks watchers',                                     dur:7,  start:'2026-09-01', end:'2026-09-10' },
-    { name:'Haptics',                                            dur:10, start:'2026-08-04', end:'2026-08-18' },
-    { name:'In-app calling',                                     dur:28, start:'2026-08-22', end:'2026-09-30' },
-    { name:'Assessments redesign',                               dur:28, start:'2026-08-17', end:'2026-09-24' },
+    { name:'Haptics',                                            dur:10, start:'2026-08-04', end:'2026-08-18', done:true },
+    { name:'In-app calling',                                     dur:28, start:'2026-09-17', end:'2026-10-26' },
+    { name:'Assessments redesign',                               dur:15, start:'2026-09-15', end:'2026-10-06' },
     { name:'New Task Flow',                                      dur:10, start:'2026-07-24', end:'2026-08-07', done:true },
     { name:'Chat improvements',                                  dur:2,  start:'2026-08-03', end:'2026-08-05', done:true },
     { name:'Force update screen',                                dur:7,  start:'2026-07-30', end:'2026-08-08', done:true },
@@ -447,14 +460,16 @@ const TEAMS = [
     { name:'Calendar drawer in tasks',             dur:7,  start:'2026-07-23', end:'2026-08-01', done:true },
     { name:'Kanban board improvements',            dur:14, start:'2026-06-21', end:'2026-07-10', done:true },
     { name:'BDLab Polishing (Scrubber, Zoom etc)', dur:5,  start:'2026-06-30', end:'2026-07-07', done:true },
-    { name:'Booking Pages',                        dur:14, start:'2026-07-29', end:'2026-08-17' },
+    { name:'Booking Pages',                        dur:14, start:'2026-07-29', end:'2026-08-17', done:true },
     { name:'Teams Update Finalization',            dur:1,  start:'2026-07-08', end:'2026-07-09', done:true },
     { name:'Program Builder',                      dur:28, start:'2026-08-10', end:'2026-09-17' },
-    { name:"Teams Admin (Coan's request)",         dur:1,  start:'2026-08-17', end:'2026-08-19' },
-    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-08-19', end:'2026-08-20' },
-    { name:'Athlete profile redesign',             dur:10, start:'2026-08-30', end:'2026-09-13' },
+    { name:'R&amp;P WEB',                              dur:7,  start:'2026-08-18', end:'2026-08-27' },
+    { name:"Teams Admin (Coan's request)",         dur:1,  start:'2026-08-25', end:'2026-08-26' },
+    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-08-26', end:'2026-08-27' },
+    { name:'Athlete profile redesign',             dur:10, start:'2026-10-19', end:'2026-10-30' },
+    { name:'Bulk calendar',                        dur:15, start:'2026-08-31', end:'2026-09-18' },
     { name:'In-App calling',                       dur:21, start:'2026-09-17', end:'2026-10-16' },
-    { name:'Assessments redesign',                 dur:14, start:'2026-10-16', end:'2026-11-03' },
+    { name:'Assessments redesign',                 dur:14, start:'2026-11-02', end:'2026-11-19' },
     { name:'Rep schemes',                          dur:3,  start:'2026-08-02', end:'2026-08-07', done:true },
     { name:'BDLab improvement',                    dur:5,  start:'2026-07-31', end:'2026-08-07', done:true },
   ]},
@@ -466,21 +481,23 @@ const TEAMS = [
     { name:'Android athletes adding',              dur:11, start:'2026-06-25', end:'2026-07-10', done:true },
     { name:'Tech Support Feature',                 dur:2,  start:'2026-07-24', end:'2026-07-26', done:true },
     { name:'Personal Calendar',                    dur:21, start:'2026-07-06', end:'2026-08-04', done:true },
-    { name:'Booking Pages',                        dur:14, start:'2026-07-29', end:'2026-08-16' },
-    { name:"Teams Admin (Coan's request)",         dur:2,  start:'2026-08-16', end:'2026-08-19' },
-    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-08-19', end:'2026-08-20' },
+    { name:'Booking Pages',                        dur:14, start:'2026-07-29', end:'2026-08-16', done:true },
+    { name:"Teams Admin (Coan's request)",         dur:2,  start:'2026-08-25', end:'2026-08-27' },
+    { name:"Bulk athletes addition (Coan's)",      dur:1,  start:'2026-08-26', end:'2026-08-27' },
     { name:'Program Builder',                      dur:28, start:'2026-08-04', end:'2026-09-11' },
     { name:'BDLab BE Support',                     dur:10, start:'2026-08-27', end:'2026-09-10' },
     { name:'Roles and Permissions Web',            dur:7,  start:'2026-07-20', end:'2026-07-28', done:true },
-    { name:'Roles and Permissions Mob',            dur:5,  start:'2026-08-11', end:'2026-08-18' },
+    { name:'Roles and Permissions Mob',            dur:5,  start:'2026-08-11', end:'2026-08-18', done:true },
     { name:'In-app calling',                       dur:21, start:'2026-09-11', end:'2026-10-09' },
+    { name:'REP schemes migration',                dur:8,  start:'2026-09-07', end:'2026-09-16' },
     { name:'Frame.io integration w Vault',         dur:7,  start:'2026-07-30', end:'2026-08-07', done:true },
-    { name:'Reports auto-tagged in Vault',         dur:7,  start:'2026-09-19', end:'2026-09-29' },
-    { name:'EL - Prehab/Rehab',                    dur:5,  start:'2026-10-15', end:'2026-10-22' },
-    { name:'Staff Page',                           dur:14, start:'2026-09-03', end:'2026-09-22' },
+    { name:'Reports auto-tagged in Vault',         dur:7,  start:'2026-10-12', end:'2026-10-20' },
+    { name:'EL - Prehab/Rehab',                    dur:5,  start:'2026-09-08', end:'2026-09-14' },
+    { name:'Athlete profile redesign',             dur:10, start:'2026-10-21', end:'2026-11-03' },
+    { name:'Staff Page',                           dur:14, start:'2026-11-24', end:'2026-12-11' },
     { name:'Rep schemes',                          dur:3,  start:'2026-07-06', end:'2026-07-09', done:true },
-    { name:'Address data for non-US countries',    dur:2,  start:'2026-09-07', end:'2026-09-08' },
-    { name:'Assessments Redesign',                 dur:14, start:'2026-09-09', end:'2026-09-28' },
+    { name:'Address data for non-US countries',    dur:3,  start:'2026-08-12', end:'2026-08-14', done:true },
+    { name:'Assessments Redesign',                 dur:14, start:'2026-11-04', end:'2026-11-23' },
   ]},
 ];
 
@@ -603,7 +620,7 @@ TEAMS.forEach((team, ti) => {
   root.appendChild(teamRow);
 
   // Task rows
-  team.tasks.forEach(task => {
+  sortTasks(team.tasks).forEach(task => {
     const row = document.createElement('div');
     row.className = 'task-row';
 
@@ -630,8 +647,12 @@ TEAMS.forEach((team, ti) => {
 
     const bar = document.createElement('div');
     bar.className = 'gantt-bar ' + barStatus(task);
-    bar.style.left  = px(dayOff(task.start)) + 'px';
-    bar.style.width = Math.max(task.dur * PX, 6) + 'px';
+    // Bar geometry is driven by the start/end dates, not by the duration column.
+    // End date is inclusive, so the bar covers the full final day.
+    const barStart = dayOff(task.start);
+    const barEnd   = dayOff(task.end);
+    bar.style.left  = px(barStart) + 'px';
+    bar.style.width = Math.max(px(barEnd - barStart + 1), 6) + 'px';
     chartCell.appendChild(bar);
 
     row.appendChild(nameCell);
